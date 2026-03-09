@@ -34,6 +34,9 @@ class BusinessLogFilter(logging.Filter):
         '[文件合并',
         '文件消息原始数据',
 
+        # === 连接状态 ===
+        '[WsClient:',
+
         # === 启动信息 ===
         '企业微信机器人服务启动',
         '已注册的机器人:',

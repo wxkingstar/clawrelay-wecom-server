@@ -115,7 +115,7 @@ class WsClient:
     # ---- 内部方法 ----
 
     async def _connect(self):
-        """建立WebSocket连接，自动检测并使用 HTTP 代理"""
+        """建立WebSocket连接，自动检测并使用 HTTP 代理，代理失败时回退直连"""
         parsed = urlparse(WS_URL)
         target_host = parsed.hostname
         target_port = parsed.port or 443
@@ -124,12 +124,16 @@ class WsClient:
         extra_kwargs = {}
 
         if proxy_url:
-            logger.info("[WsClient:%s] 通过代理连接 %s ...", self.bot_key, WS_URL)
-            sock = self._create_proxy_tunnel(proxy_url, target_host, target_port)
-            sock.setblocking(False)
-            extra_kwargs["sock"] = sock
-            extra_kwargs["ssl"] = ssl.create_default_context()
-            extra_kwargs["server_hostname"] = target_host
+            try:
+                logger.info("[WsClient:%s] 通过代理连接 %s ...", self.bot_key, WS_URL)
+                sock = self._create_proxy_tunnel(proxy_url, target_host, target_port)
+                sock.setblocking(False)
+                extra_kwargs["sock"] = sock
+                extra_kwargs["ssl"] = ssl.create_default_context()
+                extra_kwargs["server_hostname"] = target_host
+            except Exception as e:
+                logger.warning("[WsClient:%s] 代理连接失败(%s)，回退直连", self.bot_key, e)
+                extra_kwargs = {}
         else:
             logger.info("[WsClient:%s] 正在连接 %s ...", self.bot_key, WS_URL)
 
