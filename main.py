@@ -60,10 +60,16 @@ async def main():
 
     # 加载bot配置
     config_manager = BotConfigManager()
-    all_configs = config_manager.get_all_bots()
 
+    if config_manager.needs_setup():
+        if not config_manager.run_setup_wizard():
+            logger.error("配置未完成，退出")
+            return
+        print()
+
+    all_configs = config_manager.get_all_bots()
     if not all_configs:
-        logger.error("没有找到任何enabled的机器人配置，退出")
+        logger.error("没有找到任何有效的机器人配置，退出")
         return
 
     # 为每个bot启动一个Task
