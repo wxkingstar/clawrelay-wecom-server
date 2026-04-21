@@ -167,9 +167,10 @@ class ClaudeRelayAdapter:
         )
 
         # 超时配置：
-        # - total=3600s, sock_read=3600s（1小时）
-        # - 匹配企业微信 response_url 的最长有效期（3600s）
-        timeout = aiohttp.ClientTimeout(total=3600, sock_read=3600)
+        # - total=3600s：匹配企业微信 response_url 的最长有效期
+        # - sock_read=90s：clawrelay-api 每 30s 发 SSE 心跳（: keepalive），
+        #   留 3 倍余量即可快速检测上游 Claude CLI 卡死，而不必等满 total
+        timeout = aiohttp.ClientTimeout(total=3600, sock_read=90)
 
         try:
             async with aiohttp.ClientSession(timeout=timeout) as session:
